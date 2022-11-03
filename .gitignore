@@ -26,3 +26,7 @@ aif360/data/raw/**
 !aif360/data/raw/*/*.md
 aif360/sklearn/data/
 .Rproj.user
+
+*.data
+*.test
+*.names
