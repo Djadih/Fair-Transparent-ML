@@ -1,5 +1,6 @@
 from model_utils import *
 from survey_subject import SurveySubject, Query
+import concurrent.futures
 
 def adversarial_debiasing_query(subject, model_list):
     # runs through the process of gathering user input to select the model, select the features, 
@@ -47,14 +48,25 @@ def adversarial_debiasing_query(subject, model_list):
 
 def run_experiment():
 
-    print("Beginning survey session... Please enter the subject's name/unique identifer:", end="")
-    subject_name = input(" ")
-    subject = SurveySubject(subject_name)
+    # Implemented multi-threading so that the user can query the model while the model is training.
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        model_trainer_f = executor.submit(get_plain_and_debaised_model_adversarial_debiasing)
 
-    print("Gathering models...")
-    adversarial_plain_model, adversarial_debiased_model = get_plain_and_debaised_model_adversarial_debiasing()
-    # similar functions to gether models using other debiasing methods
-    all_models = [adversarial_plain_model, adversarial_debiased_model]
+        print("--------------------")
+        print("Beginning survey session... Training models in the background...")
+        print("--------------------")
+
+        subject_name = input("Please enter the subject's name/unique identifer: ")
+        subject_age = input("Please enter the subject's age: ")
+        subject_gender = input("Please enter the subject's gender: ")
+        subject_race = input("Please enter the subject's race: ")
+        subject = SurveySubject(subject_name, subject_age, subject_gender, subject_race)
+
+        print("Thank you. Beginning survey as soon as models complete training...")
+        all_models = model_trainer_f.result()
+        print("Training completed!")
+
+    # similar functions to gather models using other debiasing methods
 
     # here we might run through some pre-selected examples
     # perhaps beginning with the plain model followed by the debiased one, or some other procedure
@@ -70,4 +82,5 @@ def run_experiment():
     return
 
 if __name__ == "__main__":
+    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
     run_experiment()

@@ -1,4 +1,4 @@
-import sys
+import sys, os
 import numpy as np
 sys.path.append("../")
 from aif360.datasets import BinaryLabelDataset
@@ -23,6 +23,8 @@ tf.disable_eager_execution()
 
 
 def get_plain_and_debaised_model_adversarial_debiasing():
+    # Block printing to not distract the subject.
+    # sys.stdout = open(os.devnull, 'w')
     ## trains on whole dataset
     dataset_orig= load_preproc_data_adult()
     dataset_orig_train, dataset_orig_test = dataset_orig.split([0.7], shuffle=True)
@@ -48,6 +50,7 @@ def get_plain_and_debaised_model_adversarial_debiasing():
                           sess=sess_debiased)
 
     debiased_model.fit(dataset_orig_train)
+    sys.stdout = sys.__stdout__
 
     return plain_model, debiased_model
 

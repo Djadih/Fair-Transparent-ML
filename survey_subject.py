@@ -19,8 +19,11 @@ class Query():
 
 
 class SurveySubject():
-    def __init__(self, subjectName):
+    def __init__(self, subjectName, subjectAge, subjectGender, subjectRace):
         self.subjectName = subjectName
+        self.subjectAge = subjectAge
+        self.subjectGender = subjectGender
+        self.subjectRace = subjectRace
         self.queries = []
         return
 

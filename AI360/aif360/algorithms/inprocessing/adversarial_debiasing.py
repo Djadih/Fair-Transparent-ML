@@ -212,15 +212,17 @@ class AdversarialDebiasing(Transformer):
                                        pred_labels_loss,
                                        pred_protected_attributes_loss], feed_dict=batch_feed_dict)
                         if i % 200 == 0:
-                            print("epoch %d; iter: %d; batch classifier loss: %f; batch adversarial loss: %f" % (epoch, i, pred_labels_loss_value,
-                                                                                     pred_protected_attributes_loss_vale))
+                            # print("epoch %d; iter: %d; batch classifier loss: %f; batch adversarial loss: %f" % (epoch, i, pred_labels_loss_value,
+                                                                                    #  pred_protected_attributes_loss_vale))
+                            pass
                     else:
                         _, pred_labels_loss_value = self.sess.run(
                             [classifier_minimizer,
                              pred_labels_loss], feed_dict=batch_feed_dict)
                         if i % 200 == 0:
-                            print("epoch %d; iter: %d; batch classifier loss: %f" % (
-                            epoch, i, pred_labels_loss_value))
+                            # print("epoch %d; iter: %d; batch classifier loss: %f" % (
+                            # epoch, i, pred_labels_loss_value))
+                            pass
         return self
 
     def predict(self, dataset):
