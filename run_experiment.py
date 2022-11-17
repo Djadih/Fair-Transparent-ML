@@ -50,7 +50,9 @@ def run_experiment():
 
     # Implemented multi-threading so that the user can query the model while the model is training.
     with concurrent.futures.ThreadPoolExecutor() as executor:
-        model_trainer_f = executor.submit(get_plain_and_debaised_model_adversarial_debiasing)
+        privileged_groups = [{'sex': 1}]
+        unprivileged_groups = [{'sex': 0}]
+        model_trainer_f = executor.submit(get_plain_and_debaised_model_adversarial_debiasing, privileged_groups, unprivileged_groups)
 
         print("--------------------")
         print("Beginning survey session... Training models in the background...")

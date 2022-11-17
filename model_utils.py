@@ -8,8 +8,8 @@ from aif360.metrics import ClassificationMetric
 from aif360.metrics.utils import compute_boolean_conditioning_vector
 
 from aif360.algorithms.preprocessing.optim_preproc_helpers.data_preproc_functions import load_preproc_data_adult
-
 from aif360.algorithms.inprocessing.adversarial_debiasing import AdversarialDebiasing
+from aif360.algorithms.postprocessing.calibrated_eq_odds_postprocessing import CalibratedEqOddsPostprocessing
 
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler, MaxAbsScaler
@@ -21,15 +21,12 @@ import matplotlib.pyplot as plt
 import tensorflow.compat.v1 as tf
 tf.disable_eager_execution()
 
-def get_plain_and_debaised_model_adversarial_debiasing():
+def get_plain_and_debaised_model_adversarial_debiasing(privileged_groups, unprivileged_groups):
     # Block printing to not distract the subject.
     # sys.stdout = open(os.devnull, 'w')
     ## trains on whole dataset
     dataset_orig= load_preproc_data_adult()
-    dataset_orig_train, dataset_orig_test = dataset_orig.split([0.7], shuffle=True)
-
-    privileged_groups = [{'sex': 1}]
-    unprivileged_groups = [{'sex': 0}]
+    # dataset_orig_train, dataset_orig_test = dataset_orig.split([0.7], shuffle=True)
 
     sess_plain = tf.Session()
     plain_model = AdversarialDebiasing(privileged_groups = privileged_groups,
@@ -38,7 +35,7 @@ def get_plain_and_debaised_model_adversarial_debiasing():
                           debias=False,
                           sess=sess_plain)
 
-    plain_model.fit(dataset_orig_train)
+    plain_model.fit(dataset_orig)
 
     tf.reset_default_graph()
     sess_debiased = tf.Session()
@@ -48,11 +45,20 @@ def get_plain_and_debaised_model_adversarial_debiasing():
                           debias=True,
                           sess=sess_debiased)
 
-    debiased_model.fit(dataset_orig_train)
+    debiased_model.fit(dataset_orig)
     sys.stdout = sys.__stdout__
 
     return plain_model, debiased_model
 
+def calibrated_eqodds_postprocessing():
+    # Odds equalizing post-processing algorithm
+
+    # Learn parameters to equalize odds and apply to create a new dataset
+    cpp = CalibratedEqOddsPostprocessing(privileged_groups = privileged_groups,
+                                        unprivileged_groups = unprivileged_groups,
+                                        cost_constraint=cost_constraint,
+                                        seed=randseed)
+    cpp = cpp.fit(dataset_orig_valid, dataset_orig_valid_pred)
 
 def create_single_entry_adult_dataset(race, sex, age, education_years):
     # subject to change if we decide to/are able to use more features than those which appear in the example notebooks
