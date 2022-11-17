@@ -20,28 +20,38 @@ def adversarial_debiasing_query(subject, model_list):
     # and returning the output while logging the choices 
     query_log = Query()
 
-    model_names = ["Plain", "Adversarial_Debiased", "Calibrated_Eq_Odds_Postprocessing"]
+    model_names = ["Plain", "Adversarial_Debiased", "Calibrated_Eq_Odds_Postprocessing", "Gerry_Fair"]
     
-    model_choice = input("Which model should be used? [0: Plain, 1: Adversarial, 2: Calibrated Odds]: ")
+    valid_model = False
+    while not valid_model:
+        try:
+            model_choice = input("Which model should be used? [0: Plain, 1: Adversarial, 2: Calibrated Odds, 3: Gerry_Fair, -1: End Session]: ")
+            if model_choice not in ['0', '1', '2', '3', '-1']:
+                raise Exception("Invalid input. Try again")
+            valid_model = True
+        except Exception:
+            pass
     if model_choice == '-1':
+        print("Ending Session...")
         return False
     model = model_list[int(model_choice)]
     model_choice = model_names[int(model_choice)]
+    query_log.set_model_name(model_choice)
 
     sex_input = input("Indicate the person's gender: [m] or [f]: ")
     if sex_input == 'f':
         sex_input = 0.0
     elif sex_input == 'm':
         sex_input = 1.0
-    race_input = input("Indicate the person's race: ")
-    if race_input == "white":
-        race_input = 0.0
-    else:
+    race_input = input("Indicate the person's race: [w] or other: ")
+    if race_input == "white" or race_input == "w":
         race_input = 1.0
+    else:
+        race_input = 0.0
     age_input = int(input("Indicate the person's age in years: "))
-    education_input = int(input("Indicate the person's number of years in education: [typically 0-13]:\n"))
+    education_input = int(input("Indicate the person's number of years in education: [typically 0-13]: "))
 
-    query_input = create_single_entry_adult_dataset(race_input, sex_input, age_input, education_input)
+    query_input = create_single_entry_adult_dataset(race_input, sex_input, age_input, education_input, model_choice)
     query_log.set_features(query_input.features)
 
     pred = predict_income_adversarial_debiasing(model, query_input)
@@ -56,8 +66,8 @@ def run_experiment():
     with concurrent.futures.ThreadPoolExecutor() as executor:
         subject_info_t = executor.submit(get_subject_info)
 
-        privileged_groups = [{'sex': 1}]
-        unprivileged_groups = [{'sex': 0}]
+        privileged_groups = [{'sex': 0, 'race': 0}]
+        unprivileged_groups = [{'sex': 1, 'race': 1}]
         
         dataset_orig= load_preproc_data_adult()
 
@@ -65,8 +75,9 @@ def run_experiment():
         plain_model = plain_training(dataset_orig, privileged_groups, unprivileged_groups)
         adversarial_model = adversarial_debiasing(dataset_orig, privileged_groups, unprivileged_groups)
         cpp_model = calibrated_eqodds_postprocessing(dataset_orig, plain_model.predict(dataset_orig), privileged_groups, unprivileged_groups)
+        gerryfair_model = gerry_fair_trained_model(dataset_orig)
 
-        all_models = [plain_model, adversarial_model, cpp_model]
+        all_models = [plain_model, adversarial_model, cpp_model, gerryfair_model]
         print("Training completed!")
 
     subject = subject_info_t.result()

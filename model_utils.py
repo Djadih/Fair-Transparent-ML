@@ -14,6 +14,7 @@ from aif360.algorithms.postprocessing.calibrated_eq_odds_postprocessing import C
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler, MaxAbsScaler
 from sklearn.metrics import accuracy_score
+from aif360.algorithms.inprocessing import GerryFairClassifier
 
 from IPython.display import Markdown, display
 import matplotlib.pyplot as plt
@@ -69,7 +70,17 @@ def calibrated_eqodds_postprocessing(dataset_orig, dataset_orig_pred, privileged
 
     return cpp
 
-def create_single_entry_adult_dataset(race, sex, age, education_years):
+def gerry_fair_trained_model(dataset):
+    gerry_fair_model = GerryFairClassifier(C=100, printflag=False, gamma=.005, fairness_def='FP',
+             max_iters = 500, heatmapflag=False)
+
+    gerry_fair_model.fit(dataset, early_termination=True)
+
+    print("Gerry Fair model completed training!")
+
+    return gerry_fair_model
+
+def create_single_entry_adult_dataset(race, sex, age, education_years, model_type=None):
     # subject to change if we decide to/are able to use more features than those which appear in the example notebooks
     arr = np.array([[0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]])
 
@@ -113,15 +124,21 @@ def create_single_entry_adult_dataset(race, sex, age, education_years):
     dataset_replaced_data.features = arr
     dataset_replaced_data.age = age
     dataset_replaced_data.edu = education_years
+    if model_type == "Gerry_Fair":
+        dataset_replaced_data.protected_attributes = [race,sex]
+        dataset_replaced_data.instance_names = ['0']
+        dataset_replaced_data.instance_weights = [0.5]
+        dataset_replaced_data.labels = np.array([[0.0]])
     return dataset_replaced_data
 
 def predict_income_adversarial_debiasing(model, user_input):
+    # could use a touch up, maybe including the features we want them to think are being considered or to change non-white to be whatever they actually wanted it to represent.
     pred = model.predict(user_input).labels[0][0]
     
     races = ['White', 'Asian-Pac-Islander', 'Amer-Indian-Eskimo', 'Other', 'Black']
     genders = ['Female', 'Male']
 
-    if int(user_input.features[0][0]) == 0:
+    if int(user_input.features[0][0]) == 1:
         race_print = "white"
     else:
         race_print = "non-white"
@@ -130,7 +147,9 @@ def predict_income_adversarial_debiasing(model, user_input):
     else:
         sex_print = "male"
 
+    # print(f"The model predicts that a {user_input.age} year old {race_print} {sex_print} with {user_input.edu} years of education has a {round(pred*100, 2)}% chance of having an income greater than 50k.")
     if pred == 1.0:
         print(f"The model predicts that a {user_input.age} year old {race_print} {sex_print} with {user_input.edu} years of education DOES have an income greater than 50k.")
     elif pred == 0.0:
         print(f"The model predicts that a {user_input.age} year old {race_print} {sex_print} with {user_input.edu} years of education DOES NOT have an income greater than 50k.")
+    return pred
