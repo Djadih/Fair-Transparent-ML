@@ -7,7 +7,7 @@ from aif360.metrics import BinaryLabelDatasetMetric
 from aif360.metrics import ClassificationMetric
 from aif360.metrics.utils import compute_boolean_conditioning_vector
 
-from aif360.algorithms.preprocessing.optim_preproc_helpers.data_preproc_functions import load_preproc_data_adult, load_preproc_data_compas, load_preproc_data_german
+from aif360.algorithms.preprocessing.optim_preproc_helpers.data_preproc_functions import load_preproc_data_adult
 
 from aif360.algorithms.inprocessing.adversarial_debiasing import AdversarialDebiasing
 
@@ -20,7 +20,6 @@ import matplotlib.pyplot as plt
 
 import tensorflow.compat.v1 as tf
 tf.disable_eager_execution()
-
 
 def get_plain_and_debaised_model_adversarial_debiasing():
     # Block printing to not distract the subject.
