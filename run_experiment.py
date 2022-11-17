@@ -2,6 +2,19 @@ from model_utils import *
 from survey_subject import SurveySubject, Query
 import concurrent.futures
 
+def get_subject_info():
+    print("--------------------")
+    print("Beginning survey session... Training models in the background...")
+    print("--------------------")
+
+    subject_name = input("Please enter the subject's name/unique identifer: ")
+    subject_age = input("Please enter the subject's age: ")
+    subject_gender = input("Please enter the subject's gender: ")
+    subject_race = input("Please enter the subject's race: ")
+
+    print("Thank you. Beginning survey as soon as models complete training...")
+    return SurveySubject(subject_name, subject_age, subject_gender, subject_race)
+
 def adversarial_debiasing_query(subject, model_list):
     # runs through the process of gathering user input to select the model, select the features, 
     # and returning the output while logging the choices 
@@ -50,29 +63,22 @@ def run_experiment():
 
     # Implemented multi-threading so that the user can query the model while the model is training.
     with concurrent.futures.ThreadPoolExecutor() as executor:
+        subject_info_t = executor.submit(get_subject_info)
+
         privileged_groups = [{'sex': 1}]
         unprivileged_groups = [{'sex': 0}]
-        model_trainer_f = executor.submit(get_plain_and_debaised_model_adversarial_debiasing, privileged_groups, unprivileged_groups)
+        
+        dataset_orig= load_preproc_data_adult()
 
-        print("--------------------")
-        print("Beginning survey session... Training models in the background...")
-        print("--------------------")
+        # Need to train plain model first.
+        plain_model = plain_training(dataset_orig, privileged_groups, unprivileged_groups)
+        adversarial_model = adversarial_debiasing(dataset_orig, privileged_groups, unprivileged_groups)
+        cpp_model = calibrated_eqodds_postprocessing(dataset_orig, plain_model.predict(dataset_orig), privileged_groups, unprivileged_groups)
 
-        subject_name = input("Please enter the subject's name/unique identifer: ")
-        subject_age = input("Please enter the subject's age: ")
-        subject_gender = input("Please enter the subject's gender: ")
-        subject_race = input("Please enter the subject's race: ")
-        subject = SurveySubject(subject_name, subject_age, subject_gender, subject_race)
-
-        print("Thank you. Beginning survey as soon as models complete training...")
-        all_models = model_trainer_f.result()
+        all_models = [plain_model, adversarial_model, cpp_model]
         print("Training completed!")
 
-    # similar functions to gather models using other debiasing methods
-
-    # here we might run through some pre-selected examples
-    # perhaps beginning with the plain model followed by the debiased one, or some other procedure
-
+    subject = subject_info_t.result()
     # allow the user to input their own queries
     continue_session = True
     while continue_session:

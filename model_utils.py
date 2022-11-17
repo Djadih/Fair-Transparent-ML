@@ -21,21 +21,24 @@ import matplotlib.pyplot as plt
 import tensorflow.compat.v1 as tf
 tf.disable_eager_execution()
 
-def get_plain_and_debaised_model_adversarial_debiasing(privileged_groups, unprivileged_groups):
-    # Block printing to not distract the subject.
-    # sys.stdout = open(os.devnull, 'w')
-    ## trains on whole dataset
-    dataset_orig= load_preproc_data_adult()
-    # dataset_orig_train, dataset_orig_test = dataset_orig.split([0.7], shuffle=True)
-
+def plain_training(dataset, privileged_groups, unprivileged_groups):
+    tf.reset_default_graph()
     sess_plain = tf.Session()
     plain_model = AdversarialDebiasing(privileged_groups = privileged_groups,
-                          unprivileged_groups = unprivileged_groups,
-                          scope_name='plain_classifier',
-                          debias=False,
-                          sess=sess_plain)
+                        unprivileged_groups = unprivileged_groups,
+                        scope_name='plain_classifier',
+                        debias=False,
+                        sess=sess_plain)
 
-    plain_model.fit(dataset_orig)
+    plain_model.fit(dataset)
+
+    return plain_model
+
+def adversarial_debiasing(dataset, privileged_groups, unprivileged_groups):
+    # Block printing to not distract the subject.
+    # sys.stdout = open(os.devnull, 'w')
+    # train on entire dataset, not split
+    # dataset_orig_train, dataset_orig_test = dataset_orig.split([0.7], shuffle=True)
 
     tf.reset_default_graph()
     sess_debiased = tf.Session()
@@ -45,20 +48,26 @@ def get_plain_and_debaised_model_adversarial_debiasing(privileged_groups, unpriv
                           debias=True,
                           sess=sess_debiased)
 
-    debiased_model.fit(dataset_orig)
-    sys.stdout = sys.__stdout__
+    debiased_model.fit(dataset)
+    # sys.stdout = sys.__stdout__
 
-    return plain_model, debiased_model
+    print("Adversarial model completed training!")
 
-def calibrated_eqodds_postprocessing():
+    return debiased_model
+
+def calibrated_eqodds_postprocessing(dataset_orig, dataset_orig_pred, privileged_groups, unprivileged_groups):
     # Odds equalizing post-processing algorithm
+    cost_constraint = 'fnr' # False negative rate
 
     # Learn parameters to equalize odds and apply to create a new dataset
     cpp = CalibratedEqOddsPostprocessing(privileged_groups = privileged_groups,
                                         unprivileged_groups = unprivileged_groups,
-                                        cost_constraint=cost_constraint,
-                                        seed=randseed)
-    cpp = cpp.fit(dataset_orig_valid, dataset_orig_valid_pred)
+                                        cost_constraint=cost_constraint)
+    cpp = cpp.fit(dataset_orig, dataset_orig_pred)
+
+    print("Calibrated Eq Odds Postprocessing model completed training!")
+
+    return cpp
 
 def create_single_entry_adult_dataset(race, sex, age, education_years):
     # subject to change if we decide to/are able to use more features than those which appear in the example notebooks
