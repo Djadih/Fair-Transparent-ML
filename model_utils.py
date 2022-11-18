@@ -131,6 +131,75 @@ def create_single_entry_adult_dataset(race, sex, age, education_years, model_typ
         dataset_replaced_data.labels = np.array([[0.0]])
     return dataset_replaced_data
 
+
+def prompt_for_ranking():
+    ret_rankings = []
+
+    models = ["Plain", "Adversarial_Debiased", "Calibrated_Eq_Odds_Postprocessing", "Gerry_Fair"]
+    model_idx = [0, 1, 2, 3]
+    model_idx_names = ["0: Plain", "1: Adversarial", "2: Calibrated Odds", "3: Gerry_Fair"]
+    
+    valid_input = False
+    while not valid_input:
+        input_str = "Which model was the most fair? "
+        for model_name in model_idx_names:
+            if model_name != " ":
+                input_str += model_name + "  "
+        try:
+            input_ = int(input(input_str))
+        except Exception:
+            input_ = -1
+        if input_ not in model_idx:
+            print("Try again")
+        else:
+            valid_input = True
+            ret_rankings.append(models[input_])
+            model_idx_names[input_] = " "
+            model_idx.remove(input_)
+
+    valid_input = False
+    while not valid_input:
+        input_str = "Which model was the next most fair? "
+        for model_name in model_idx_names:
+            if model_name != " ":
+                input_str += model_name + "  "
+        try:
+            input_ = int(input(input_str))
+        except Exception:
+            input_ = -1
+        if input_ not in model_idx:
+            print("Try again")
+        else:
+            valid_input = True
+            ret_rankings.append(models[input_])
+            model_idx_names[input_] = " "
+            model_idx.remove(input_)
+
+    valid_input = False
+    while not valid_input:
+        input_str = "Which model was the next most fair? "
+        for model_name in model_idx_names:
+            if model_name != " ":
+                input_str += model_name + "  "
+        try:
+            input_ = int(input(input_str))
+        except Exception:
+            input_ = -1
+        if input_ not in model_idx:
+            print("Try again")
+        else:
+            valid_input = True
+            ret_rankings.append(models[input_])
+            model_idx_names[input_] = " "
+            model_idx.remove(input_)
+
+    
+
+    ret_rankings.append(models[model_idx[0]])
+    return ret_rankings
+
+
+
 def predict_income_adversarial_debiasing(model, user_input):
     # could use a touch up, maybe including the features we want them to think are being considered or to change non-white to be whatever they actually wanted it to represent.
     pred = model.predict(user_input).labels[0][0]
@@ -153,3 +222,4 @@ def predict_income_adversarial_debiasing(model, user_input):
     elif pred == 0.0:
         print(f"The model predicts that a {user_input.age} year old {race_print} {sex_print} with {user_input.edu} years of education DOES NOT have an income greater than 50k.")
     return pred
+

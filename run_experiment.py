@@ -52,6 +52,7 @@ def adversarial_debiasing_query(subject, model_list):
     education_input = int(input("Indicate the person's number of years in education: [typically 0-13]: "))
 
     query_input = create_single_entry_adult_dataset(race_input, sex_input, age_input, education_input, model_choice)
+    query_log.set_featureNames(query_input.feature_names)
     query_log.set_features(query_input.features)
 
     pred = predict_income_adversarial_debiasing(model, query_input)
@@ -75,9 +76,9 @@ def run_experiment():
         plain_model = plain_training(dataset_orig, privileged_groups, unprivileged_groups)
         adversarial_model = adversarial_debiasing(dataset_orig, privileged_groups, unprivileged_groups)
         cpp_model = calibrated_eqodds_postprocessing(dataset_orig, plain_model.predict(dataset_orig), privileged_groups, unprivileged_groups)
-        gerryfair_model = gerry_fair_trained_model(dataset_orig)
+        # gerryfair_model = gerry_fair_trained_model(dataset_orig)
 
-        all_models = [plain_model, adversarial_model, cpp_model, gerryfair_model]
+        all_models = [plain_model, adversarial_model, cpp_model]
         print("Training completed!")
 
     subject = subject_info_t.result()
@@ -86,9 +87,12 @@ def run_experiment():
     while continue_session:
         continue_session = adversarial_debiasing_query(subject, all_models)
 
-    # After session completed, print all queries to see if the logging worked
-    # in a real session we would save as a file probably
-    subject.print_all_queries()    
+    # prompt for rankings 
+    rankings = prompt_for_ranking()
+
+    # Save queries and results
+    subject.save_session_data(rankings)
+    subject.print_all_queries()
     return
 
 if __name__ == "__main__":
