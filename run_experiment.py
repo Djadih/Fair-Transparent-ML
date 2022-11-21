@@ -28,7 +28,7 @@ def adversarial_debiasing_query(subject, model_list):
     # and returning the output while logging the choices
     query_log = Query()
 
-    model_names = ["Adversarial_Debiased", "Plain", "Calibrated_Eq_Odds_Postprocessing", "Gerry_Fair"]
+    model_names = ["Adversarial_Debiased", "Plain", "ExpGrad", "Gerry_Fair"]
     model_aliases = ["Albatross", "Beaver", "Chameleon", "Dragonfly"]
 
     valid_model = False
@@ -55,7 +55,7 @@ def adversarial_debiasing_query(subject, model_list):
         sex_input = 0.0
     elif raw_sex_input == 'm':
         sex_input = 1.0
-    raw_race_input = input("Indicate the person's race: [w] or other: ")
+    raw_race_input = input("Indicate the person's race [white, asian, amer-indian, black, other]: ")
     if raw_race_input == "white" or raw_race_input == "w":
         race_input = 1.0
     else:
@@ -63,10 +63,10 @@ def adversarial_debiasing_query(subject, model_list):
     age_input = int(input("Indicate the person's age in years: "))
     education_input = int(input("Indicate the person's number of years in education: [typically 0-13]: "))
 
-    occupation_input = input("Indicate the person's occupation: ")
-    workclass_input = input("Indicate the person's workclass: ")
+    occupation_input = input("Indicate the person's occupation [student, office, farmer, trucker, other]: ")
+    workclass_input = input("Indicate the person's workclass: [private, self-emp, govt, other]: ")
     hrsperweek_input = input("Indicate the hours per week the person works: ")
-    marital_input = input("Indicate the person's marital status: ")
+    marital_input = input("Indicate the person's marital status [married, single, divorced, other]: ")
 
 
     raw_query = RawQuery(modelType=model_alias, inputs={
