@@ -30,3 +30,4 @@ aif360/sklearn/data/
 *.data
 *.test
 *.names
+*.csv

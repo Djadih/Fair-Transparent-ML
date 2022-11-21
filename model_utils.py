@@ -1,23 +1,10 @@
-import sys, os
+import sys
 import numpy as np
 sys.path.append("../")
-from aif360.datasets import BinaryLabelDataset
-from aif360.datasets import AdultDataset, GermanDataset, CompasDataset
-from aif360.metrics import BinaryLabelDatasetMetric
-from aif360.metrics import ClassificationMetric
-from aif360.metrics.utils import compute_boolean_conditioning_vector
 
 from aif360.algorithms.preprocessing.optim_preproc_helpers.data_preproc_functions import load_preproc_data_adult
-from aif360.algorithms.inprocessing.adversarial_debiasing import AdversarialDebiasing
-from aif360.algorithms.postprocessing.calibrated_eq_odds_postprocessing import CalibratedEqOddsPostprocessing
-
+from aif360.algorithms.inprocessing import GerryFairClassifier, ExponentiatedGradientReduction, AdversarialDebiasing
 from sklearn.linear_model import LogisticRegression
-from sklearn.preprocessing import StandardScaler, MaxAbsScaler
-from sklearn.metrics import accuracy_score
-from aif360.algorithms.inprocessing import GerryFairClassifier
-
-from IPython.display import Markdown, display
-import matplotlib.pyplot as plt
 
 import tensorflow.compat.v1 as tf
 tf.disable_eager_execution()
@@ -56,9 +43,18 @@ def adversarial_debiasing(dataset, privileged_groups, unprivileged_groups):
 
     return debiased_model
 
+def exponentiated_gradient_reduction(dataset, constraints):
+    # Exponentiated Gradient Reduction
+    expgrad = ExponentiatedGradientReduction(constraints=constraints, estimator=LogisticRegression())
+    expgrad.fit(dataset)
+
+    print("Exponentiated Gradient Reduction model completed training!")
+
+    return expgrad
+
 def calibrated_eqodds_postprocessing(dataset_orig, dataset_orig_pred, privileged_groups, unprivileged_groups):
     # Odds equalizing post-processing algorithm
-    cost_constraint = 'fnr' # False negative rate
+    cost_constraint = 'weighted'
 
     # Learn parameters to equalize odds and apply to create a new dataset
     cpp = CalibratedEqOddsPostprocessing(privileged_groups = privileged_groups,

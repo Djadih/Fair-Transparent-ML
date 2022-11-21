@@ -1,3 +1,4 @@
+import os
 from model_utils import *
 from survey_subject import SurveySubject, Query, RawQuery
 import concurrent.futures
@@ -99,18 +100,19 @@ def run_experiment():
         privileged_groups = [{'sex': 0, 'race': 0}]
         unprivileged_groups = [{'sex': 1, 'race': 1}]
 
-        dataset_orig= load_preproc_data_adult()
+        dataset_orig = load_preproc_data_adult()
 
         # Need to train plain model first.
         plain_model = plain_training(dataset_orig, privileged_groups, unprivileged_groups)
         adversarial_model = adversarial_debiasing(dataset_orig, privileged_groups, unprivileged_groups)
-        cpp_model = calibrated_eqodds_postprocessing(dataset_orig, plain_model.predict(dataset_orig), privileged_groups, unprivileged_groups)
+        # cpp_model = calibrated_eqodds_postprocessing(dataset_orig, plain_model.predict(dataset_orig), privileged_groups, unprivileged_groups)
+        expgrad_model = exponentiated_gradient_reduction(dataset=dataset_orig, constraints="DemographicParity") 
         gerryfair_model = gerry_fair_trained_model(dataset_orig)
 
-        all_models = [adversarial_model, plain_model, cpp_model, gerryfair_model]
+        all_models = [adversarial_model, plain_model, expgrad_model, gerryfair_model]
         print("Training completed!")
-
-    subject = subject_info_t.result()
+        subject = subject_info_t.result()
+    
     # allow the user to input their own queries
     continue_session = True
     while continue_session:
