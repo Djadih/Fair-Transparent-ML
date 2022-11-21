@@ -23,8 +23,6 @@ def plain_training(dataset, privileged_groups, unprivileged_groups):
     return plain_model
 
 def adversarial_debiasing(dataset, privileged_groups, unprivileged_groups):
-    # Block printing to not distract the subject.
-    # sys.stdout = open(os.devnull, 'w')
     # train on entire dataset, not split
     # dataset_orig_train, dataset_orig_test = dataset_orig.split([0.7], shuffle=True)
 
@@ -37,7 +35,6 @@ def adversarial_debiasing(dataset, privileged_groups, unprivileged_groups):
                           sess=sess_debiased)
 
     debiased_model.fit(dataset)
-    # sys.stdout = sys.__stdout__
 
     print("Adversarial model completed training!")
 

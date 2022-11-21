@@ -94,7 +94,7 @@ def adversarial_debiasing_query(subject, model_list):
 
 def run_experiment():
     # Implemented multi-threading so that the user can query the model while the model is training.
-    with concurrent.futures.ThreadPoolExecutor() as executor:
+    with concurrent.futures.ProcessPoolExecutor() as executor:
         subject_info_t = executor.submit(get_subject_info)
 
         privileged_groups = [{'sex': 0, 'race': 0}]
@@ -103,7 +103,7 @@ def run_experiment():
         dataset_orig = load_preproc_data_adult()
 
         # Need to train plain model first.
-        plain_model = plain_training(dataset_orig, privileged_groups, unprivileged_groups)
+        plain_model = executor.submit(plain_training, dataset_orig, privileged_groups, unprivileged_groups)
         adversarial_model = adversarial_debiasing(dataset_orig, privileged_groups, unprivileged_groups)
         # cpp_model = calibrated_eqodds_postprocessing(dataset_orig, plain_model.predict(dataset_orig), privileged_groups, unprivileged_groups)
         expgrad_model = exponentiated_gradient_reduction(dataset=dataset_orig, constraints="DemographicParity") 
