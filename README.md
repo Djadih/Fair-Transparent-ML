@@ -35,6 +35,6 @@ The script already sorts all data by model type, but if participants want to sor
 Participants can refresh their log by pressing the "Refresh" button under the "Data" tab.
 
 Other Excel tips:
-Use conditional formatting on the "Predicted Income..." column to better view the model's outputs. Choose colors that make sense (i.e. red for "LESS" and blue/green for "GREATER")
+Use conditional formatting on the "Predicted Income..." column to better view the model's outputs. Choose colors that make sense (i.e. red for "LESS" and blue/green for "MORE")
 
 
