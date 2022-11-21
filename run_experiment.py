@@ -105,9 +105,8 @@ def run_experiment():
         dataset_orig = load_preproc_data_adult()
 
         # Need to train plain model first.
-        plain_model = executor.submit(plain_training, dataset_orig, privileged_groups, unprivileged_groups)
+        plain_model = plain_training(dataset_orig, privileged_groups, unprivileged_groups)
         adversarial_model = adversarial_debiasing(dataset_orig, privileged_groups, unprivileged_groups)
-        # cpp_model = calibrated_eqodds_postprocessing(dataset_orig, plain_model.predict(dataset_orig), privileged_groups, unprivileged_groups)
         expgrad_model = exponentiated_gradient_reduction(dataset=dataset_orig, constraints="DemographicParity")
         gerryfair_model = gerry_fair_trained_model(dataset_orig)
 
