@@ -105,9 +105,9 @@ def run_experiment():
         plain_model = plain_training(dataset_orig, privileged_groups, unprivileged_groups)
         adversarial_model = adversarial_debiasing(dataset_orig, privileged_groups, unprivileged_groups)
         cpp_model = calibrated_eqodds_postprocessing(dataset_orig, plain_model.predict(dataset_orig), privileged_groups, unprivileged_groups)
-        # gerryfair_model = gerry_fair_trained_model(dataset_orig)
+        gerryfair_model = gerry_fair_trained_model(dataset_orig)
 
-        all_models = [adversarial_model, plain_model, cpp_model]
+        all_models = [adversarial_model, plain_model, cpp_model, gerryfair_model]
         print("Training completed!")
 
     subject = subject_info_t.result()

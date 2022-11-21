@@ -218,8 +218,8 @@ def predict_income_adversarial_debiasing(model, user_input):
 
     # print(f"The model predicts that a {user_input.age} year old {race_print} {sex_print} with {user_input.edu} years of education has a {round(pred*100, 2)}% chance of having an income greater than 50k.")
     if pred == 1.0:
-        print(f"The model predicts that a {user_input.age} year old {race_print} {sex_print} with {user_input.edu} years of education DOES have an income greater than 50k.")
+        print(f"The model predicts that a {user_input.age} year old {race_print} {sex_print} with {user_input.edu} years of education makes MORE than 50k.")
     elif pred == 0.0:
-        print(f"The model predicts that a {user_input.age} year old {race_print} {sex_print} with {user_input.edu} years of education DOES NOT have an income greater than 50k.")
+        print(f"The model predicts that a {user_input.age} year old {race_print} {sex_print} with {user_input.edu} years of education makes LESS than 50k.")
     return pred
 
