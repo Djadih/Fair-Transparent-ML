@@ -20,6 +20,8 @@ def plain_training(dataset, privileged_groups, unprivileged_groups):
 
     plain_model.fit(dataset)
 
+    print("Plain model completed training!")
+
     return plain_model
 
 def adversarial_debiasing(dataset, privileged_groups, unprivileged_groups):

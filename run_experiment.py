@@ -68,7 +68,7 @@ def adversarial_debiasing_query(subject, model_list):
         sex_input = 0.0
     elif raw_sex_input == 'm':
         sex_input = 1.0
-    workclass_input = input("Indicate the person's workclass [Private, SelfEmployed,Government, Never worked]: ")
+    workclass_input = input("Indicate the person's workclass [Private, Self-Employed, Government, Never worked]: ")
 
 
     raw_query = RawQuery(modelType=model_alias, inputs= {
@@ -96,7 +96,7 @@ def adversarial_debiasing_query(subject, model_list):
 
 def run_experiment():
     # Implemented multi-threading so that the user can query the model while the model is training.
-    with concurrent.futures.ProcessPoolExecutor() as executor:
+    with concurrent.futures.ThreadPoolExecutor() as executor:
         subject_info_t = executor.submit(get_subject_info)
 
         privileged_groups = [{'sex': 0, 'race': 0}]
