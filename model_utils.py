@@ -114,7 +114,7 @@ def create_single_entry_adult_dataset(race, sex, age, education_years, model_typ
         arr[0][15] = 1.
     else:
         arr[0][17] = 1.
-    
+
     dataset_replaced_data = load_preproc_data_adult()
     dataset_replaced_data.features = arr
     dataset_replaced_data.age = age
@@ -130,10 +130,11 @@ def create_single_entry_adult_dataset(race, sex, age, education_years, model_typ
 def prompt_for_ranking():
     ret_rankings = []
 
-    models = ["Plain", "Adversarial_Debiased", "Calibrated_Eq_Odds_Postprocessing", "Gerry_Fair"]
+    # model_names = ["Adversarial_Debiased", "Plain", "ExpGrad", "Gerry_Fair"]
+    model_aliases = ["Albatross", "Beaver", "Chameleon", "Dragonfly"]
     model_idx = [0, 1, 2, 3]
-    model_idx_names = ["0: Plain", "1: Adversarial", "2: Calibrated Odds", "3: Gerry_Fair"]
-    
+    model_idx_names = ["0: Albatross", "1: Beaver", "2: Chameleon", "3: Dragonfly"]
+
     valid_input = False
     while not valid_input:
         input_str = "Which model was the most fair? "
@@ -148,7 +149,7 @@ def prompt_for_ranking():
             print("Try again")
         else:
             valid_input = True
-            ret_rankings.append(models[input_])
+            ret_rankings.append(model_aliases[input_])
             model_idx_names[input_] = " "
             model_idx.remove(input_)
 
@@ -166,7 +167,7 @@ def prompt_for_ranking():
             print("Try again")
         else:
             valid_input = True
-            ret_rankings.append(models[input_])
+            ret_rankings.append(model_aliases[input_])
             model_idx_names[input_] = " "
             model_idx.remove(input_)
 
@@ -184,13 +185,13 @@ def prompt_for_ranking():
             print("Try again")
         else:
             valid_input = True
-            ret_rankings.append(models[input_])
+            ret_rankings.append(model_aliases[input_])
             model_idx_names[input_] = " "
             model_idx.remove(input_)
 
-    
 
-    ret_rankings.append(models[model_idx[0]])
+
+    ret_rankings.append(model_aliases[model_idx[0]])
     return ret_rankings
 
 
@@ -198,7 +199,7 @@ def prompt_for_ranking():
 def predict_income_adversarial_debiasing(model, user_input):
     # could use a touch up, maybe including the features we want them to think are being considered or to change non-white to be whatever they actually wanted it to represent.
     pred = model.predict(user_input).labels[0][0]
-    
+
     races = ['White', 'Asian-Pac-Islander', 'Amer-Indian-Eskimo', 'Other', 'Black']
     genders = ['Female', 'Male']
 
