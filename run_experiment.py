@@ -50,34 +50,36 @@ def adversarial_debiasing_query(subject, model_list):
     model_alias = model_aliases[model_choice_idx]
     query_log.set_model_name(model_choice)
 
+    age_input = int(input("Indicate the person's age in years [0-99]: "))
+    hrsperweek_input = input("Indicate the hours per week the person works [>0]: ")
+    education_input = int(input("Indicate the person's number of years in education: [0-13]: "))
+    marital_input = input("Indicate the person's marital status [Married, Divorced, Never married, Separated, Widowed]: ")
+    occupation_input = input(
+        """Indicate the person's occupation [Management, Business, Sciences, Health occupations, Education, Arts,
+        Sales, Trades, Agriculture, Manufacturing]: """)
+
+    raw_race_input = input("Indicate the person's race [White, Asian Pacific Islander, Black, American Indian, or Other]: ").lower()
+    if raw_race_input == "white" or raw_race_input == "w":
+        race_input = 1.0
+    else:
+        race_input = 0.0
     raw_sex_input = input("Indicate the person's gender: [m] or [f]: ")
     if raw_sex_input == 'f':
         sex_input = 0.0
     elif raw_sex_input == 'm':
         sex_input = 1.0
-    raw_race_input = input("Indicate the person's race [white, asian, amer-indian, black, other]: ")
-    if raw_race_input == "white" or raw_race_input == "w":
-        race_input = 1.0
-    else:
-        race_input = 0.0
-    age_input = int(input("Indicate the person's age in years: "))
-    education_input = int(input("Indicate the person's number of years in education: [typically 0-13]: "))
-
-    occupation_input = input("Indicate the person's occupation [student, office, farmer, trucker, other]: ")
-    workclass_input = input("Indicate the person's workclass: [private, self-emp, govt, other]: ")
-    hrsperweek_input = input("Indicate the hours per week the person works: ")
-    marital_input = input("Indicate the person's marital status [married, single, divorced, other]: ")
+    workclass_input = input("Indicate the person's workclass [Private, SelfEmployed,Government, Never worked]: ")
 
 
-    raw_query = RawQuery(modelType=model_alias, inputs={
-        "Sex"           : "Male" if raw_sex_input == "m" else "Female",
-        "Race"          : raw_race_input,
+    raw_query = RawQuery(modelType=model_alias, inputs= {
         "Age"           : age_input,
-        "Education"     : education_input,
-        "Occupation"    : occupation_input,
-        "Workclass"     : workclass_input,
         "Hours Per Week": hrsperweek_input,
-        "Marital Status": marital_input
+        "Education"     : education_input,
+        "Marital Status": marital_input,
+        "Occupation"    : occupation_input,
+        "Race"          : raw_race_input,
+        "Sex"           : "Male" if raw_sex_input == "m" else "Female",
+        "Workclass"     : workclass_input,
     })
 
     query_input = create_single_entry_adult_dataset(race_input, sex_input, age_input, education_input, model_choice)
@@ -86,7 +88,7 @@ def adversarial_debiasing_query(subject, model_list):
 
     pred = predict_income_adversarial_debiasing(model, query_input)
     query_log.set_output(pred)
-    raw_query.set_output("LESS" if pred == 0.0 else "GREATER")
+    raw_query.set_output("LESS" if pred == 0.0 else "MORE")
 
     subject.log_completed_query(raw_query, query_log)
 
@@ -106,13 +108,13 @@ def run_experiment():
         plain_model = executor.submit(plain_training, dataset_orig, privileged_groups, unprivileged_groups)
         adversarial_model = adversarial_debiasing(dataset_orig, privileged_groups, unprivileged_groups)
         # cpp_model = calibrated_eqodds_postprocessing(dataset_orig, plain_model.predict(dataset_orig), privileged_groups, unprivileged_groups)
-        expgrad_model = exponentiated_gradient_reduction(dataset=dataset_orig, constraints="DemographicParity") 
+        expgrad_model = exponentiated_gradient_reduction(dataset=dataset_orig, constraints="DemographicParity")
         gerryfair_model = gerry_fair_trained_model(dataset_orig)
 
         all_models = [adversarial_model, plain_model, expgrad_model, gerryfair_model]
         print("Training completed!")
         subject = subject_info_t.result()
-    
+
     # allow the user to input their own queries
     continue_session = True
     while continue_session:
