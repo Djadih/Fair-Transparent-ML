@@ -65,8 +65,6 @@ class SurveySubject():
             print(f"Output: {query.output}\n")
 
     def save_session_data(self, rankings):
-        ## TODO: save the data gathered in the session
-        ## to some format like csv or other
         cols = [0,1,2,3]
         featureNames = self.queries[0].featureNames
         cols.extend(featureNames)

@@ -50,25 +50,31 @@ def adversarial_debiasing_query(subject, model_list):
     model_alias = model_aliases[model_choice_idx]
     query_log.set_model_name(model_choice)
 
-    age_input = int(input("Indicate the person's age in years [0-99]: "))
-    hrsperweek_input = input("Indicate the hours per week the person works [>0]: ")
-    education_input = int(input("Indicate the person's number of years in education: [0-13]: "))
-    marital_input = input("Indicate the person's marital status [Married, Divorced, Never married, Separated, Widowed]: ")
-    occupation_input = input(
-        """Indicate the person's occupation [Management, Business, Sciences, Health occupations, Education, Arts,
-        Sales, Trades, Agriculture, Manufacturing]: """)
+    all_inputs_valid = False
+    while not all_inputs_valid:
+        try:
+            age_input = int(input("Indicate the person's age in years [0-99]: "))
+            hrsperweek_input = input("Indicate the hours per week the person works [>0]: ")
+            education_input = int(input("Indicate the person's number of years in education: [0-13]: "))
+            marital_input = input("Indicate the person's marital status [Married, Divorced, Never married, Separated, Widowed]: ")
+            occupation_input = input(
+                """Indicate the person's occupation [Management, Business, Sciences, Health occupations, Education, Arts,
+                Sales, Trades, Agriculture, Manufacturing]: """)
 
-    raw_race_input = input("Indicate the person's race [White, Asian Pacific Islander, Black, American Indian, or Other]: ").lower()
-    if raw_race_input == "white" or raw_race_input == "w":
-        race_input = 1.0
-    else:
-        race_input = 0.0
-    raw_sex_input = input("Indicate the person's gender: [m] or [f]: ")
-    if raw_sex_input == 'f':
-        sex_input = 0.0
-    elif raw_sex_input == 'm':
-        sex_input = 1.0
-    workclass_input = input("Indicate the person's workclass [Private, Self-Employed, Government, Never worked]: ")
+            raw_race_input = input("Indicate the person's race [White, Asian Pacific Islander, Black, American Indian, or Other]: ").lower()
+            if raw_race_input == "white" or raw_race_input == "w":
+                race_input = 1.0
+            else:
+                race_input = 0.0
+            raw_sex_input = input("Indicate the person's gender: [m] or [f]: ")
+            if raw_sex_input == 'f':
+                sex_input = 0.0
+            elif raw_sex_input == 'm':
+                sex_input = 1.0
+            workclass_input = input("Indicate the person's workclass [Private, Self-Employed, Government, Never worked]: ")
+            all_inputs_valid = True
+        except Exception:
+            print("Error while parsing input. Try again")
 
 
     raw_query = RawQuery(modelType=model_alias, inputs= {
