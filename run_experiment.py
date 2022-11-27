@@ -28,11 +28,12 @@ def adversarial_debiasing_query(subject, model_list):
     # and returning the output while logging the choices
     query_log = Query()
 
+
     model_names = ["Adversarial_Debiased", "Plain", "ExpGrad", "Gerry_Fair"]
     model_aliases = ["Albatross", "Beaver", "Chameleon", "Dragonfly"]
 
     # valid_model = False
-    # while not valid_model:
+    # while not valid_model:   Albatross  Dragonfly  Chameleon  Beaver
     #     try:
     #         model_choice = input("Which model should be used? [0: Albatross, 1: Beaver, 2: Chameleon, 3: Dragonfly, -1: End Session]: ")
     #         if model_choice not in ['0', '1', '2', '3', '-1', 'a', 'b', 'c', 'd']:
@@ -54,6 +55,8 @@ def adversarial_debiasing_query(subject, model_list):
     while not all_inputs_valid:
         try:
             age_input = int(input("Indicate the person's age in years [0-99]: "))
+            if age_input == -1:
+                return False
             hrsperweek_input = input("Indicate the hours per week the person works [>0]: ")
             education_input = int(input("Indicate the person's number of years in education: [0-13]: "))
             marital_input = input("Indicate the person's marital status [Married, Divorced, Never married, Separated, Widowed]: ")
@@ -96,10 +99,22 @@ def adversarial_debiasing_query(subject, model_list):
     gerry_input = create_single_entry_adult_dataset(race_input, sex_input, age_input, education_input, model_type="Gerry_Fair")
     # pred_list.append(predict_income_adversarial_debiasing(model_list[3:3], gerry_input)[0])
     gerry_pred = predict_income_adversarial_debiasing(model_list[3:4], gerry_input)
+    print(" ")
     pred_list.append(gerry_pred[0])
 
-    for pred in pred_list:
+    for i, pred in enumerate(pred_list):
         query_log.set_output(pred)
+        
+        raw_query = RawQuery(modelType=model_aliases[i], inputs= {
+        "Age"           : age_input,
+        "Hours Per Week": hrsperweek_input,
+        "Education"     : education_input,
+        "Marital Status": marital_input,
+        "Occupation"    : occupation_input,
+        "Race"          : raw_race_input,
+        "Sex"           : "Male" if raw_sex_input == "m" else "Female",
+        "Workclass"     : workclass_input,
+        })
         raw_query.set_output("LESS" if pred == 0.0 else "MORE")
         subject.log_completed_query(raw_query, query_log)
 
