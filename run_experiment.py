@@ -31,24 +31,24 @@ def adversarial_debiasing_query(subject, model_list):
     model_names = ["Adversarial_Debiased", "Plain", "ExpGrad", "Gerry_Fair"]
     model_aliases = ["Albatross", "Beaver", "Chameleon", "Dragonfly"]
 
-    valid_model = False
-    while not valid_model:
-        try:
-            model_choice = input("Which model should be used? [0: Albatross, 1: Beaver, 2: Chameleon, 3: Dragonfly, -1: End Session]: ")
-            if model_choice not in ['0', '1', '2', '3', '-1', 'a', 'b', 'c', 'd']:
-                raise Exception("Invalid input. Try again")
-            valid_model = True
-        except Exception:
-            pass
-    if model_choice == '-1':
-        print("Ending Session...")
-        return False
+    # valid_model = False
+    # while not valid_model:
+    #     try:
+    #         model_choice = input("Which model should be used? [0: Albatross, 1: Beaver, 2: Chameleon, 3: Dragonfly, -1: End Session]: ")
+    #         if model_choice not in ['0', '1', '2', '3', '-1', 'a', 'b', 'c', 'd']:
+    #             raise Exception("Invalid input. Try again")
+    #         valid_model = True
+    #     except Exception:
+    #         pass
+    # if model_choice == '-1':
+    #     print("Ending Session...")
+    #     return False
 
-    model_choice_idx = int(model_choice) if model_choice.isdigit() else (ord(model_choice)-ord('a'))
-    model = model_list[model_choice_idx]
-    model_choice = model_names[model_choice_idx]
-    model_alias = model_aliases[model_choice_idx]
-    query_log.set_model_name(model_choice)
+    # model_choice_idx = int(model_choice) if model_choice.isdigit() else (ord(model_choice)-ord('a'))
+    # model = model_list[model_choice_idx]
+    # model_choice = model_names[model_choice_idx]
+    # model_alias = model_aliases[model_choice_idx]
+    # query_log.set_model_name(model_choice)
 
     all_inputs_valid = False
     while not all_inputs_valid:
@@ -77,7 +77,7 @@ def adversarial_debiasing_query(subject, model_list):
             print("Error while parsing input. Try again")
 
 
-    raw_query = RawQuery(modelType=model_alias, inputs= {
+    raw_query = RawQuery(modelType='all', inputs= {
         "Age"           : age_input,
         "Hours Per Week": hrsperweek_input,
         "Education"     : education_input,
@@ -88,15 +88,21 @@ def adversarial_debiasing_query(subject, model_list):
         "Workclass"     : workclass_input,
     })
 
-    query_input = create_single_entry_adult_dataset(race_input, sex_input, age_input, education_input, model_choice)
+    query_input = create_single_entry_adult_dataset(race_input, sex_input, age_input, education_input)
     query_log.set_featureNames(query_input.feature_names)
     query_log.set_features(query_input.features)
+    pred_list = predict_income_adversarial_debiasing(model_list[0:3], query_input)
 
-    pred = predict_income_adversarial_debiasing(model, query_input)
-    query_log.set_output(pred)
-    raw_query.set_output("LESS" if pred == 0.0 else "MORE")
+    gerry_input = create_single_entry_adult_dataset(race_input, sex_input, age_input, education_input, model_type="Gerry_Fair")
+    # pred_list.append(predict_income_adversarial_debiasing(model_list[3:3], gerry_input)[0])
+    gerry_pred = predict_income_adversarial_debiasing(model_list[3:4], gerry_input)
+    pred_list.append(gerry_pred[0])
 
-    subject.log_completed_query(raw_query, query_log)
+    for pred in pred_list:
+        query_log.set_output(pred)
+        raw_query.set_output("LESS" if pred == 0.0 else "MORE")
+        subject.log_completed_query(raw_query, query_log)
+
 
     return True
 
@@ -110,7 +116,6 @@ def run_experiment():
 
         dataset_orig = load_preproc_data_adult()
 
-        # Need to train plain model first.
         plain_model = plain_training(dataset_orig, privileged_groups, unprivileged_groups)
         adversarial_model = adversarial_debiasing(dataset_orig, privileged_groups, unprivileged_groups)
         expgrad_model = exponentiated_gradient_reduction(dataset=dataset_orig, constraints="DemographicParity")
