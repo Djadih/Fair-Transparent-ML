@@ -51,6 +51,11 @@ def adversarial_debiasing_query(subject, model_list):
     # model_alias = model_aliases[model_choice_idx]
     # query_log.set_model_name(model_choice)
 
+    continue_field = input("Would you like to continue the session? [y] or [n]: ")
+    if continue_field == 'n':
+        print("Ending Session...")
+        return False
+
     all_inputs_valid = False
     while not all_inputs_valid:
         try:
