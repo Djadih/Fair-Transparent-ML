@@ -223,4 +223,3 @@ def predict_income_adversarial_debiasing(models, user_input):
         pred_list.append(pred)
             
     return pred_list
-

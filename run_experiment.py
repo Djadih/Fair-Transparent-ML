@@ -91,8 +91,13 @@ def adversarial_debiasing_query(subject, model_list):
     query_input = create_single_entry_adult_dataset(race_input, sex_input, age_input, education_input)
     query_log.set_featureNames(query_input.feature_names)
     query_log.set_features(query_input.features)
+    pred_list = predict_income_adversarial_debiasing(model_list[0:3], query_input)
 
-    pred_list = predict_income_adversarial_debiasing(model_list, query_input)
+    gerry_input = create_single_entry_adult_dataset(race_input, sex_input, age_input, education_input, model_type="Gerry_Fair")
+    # pred_list.append(predict_income_adversarial_debiasing(model_list[3:3], gerry_input)[0])
+    gerry_pred = predict_income_adversarial_debiasing(model_list[3:4], gerry_input)
+    pred_list.append(gerry_pred[0])
+
     for pred in pred_list:
         query_log.set_output(pred)
         raw_query.set_output("LESS" if pred == 0.0 else "MORE")
@@ -117,7 +122,6 @@ def run_experiment():
         gerryfair_model = gerry_fair_trained_model(dataset_orig)
 
         all_models = [adversarial_model, plain_model, expgrad_model, gerryfair_model]
-        # all_models = [gerryfair_model]
         print("Training completed!")
         subject = subject_info_t.result()
 
