@@ -196,26 +196,31 @@ def prompt_for_ranking():
 
 
 
-def predict_income_adversarial_debiasing(model, user_input):
+def predict_income_adversarial_debiasing(models, user_input):
     # could use a touch up, maybe including the features we want them to think are being considered or to change non-white to be whatever they actually wanted it to represent.
-    pred = model.predict(user_input).labels[0][0]
+    # pred = model.predict(user_input).labels[0][0]
+    pred_list = []
+    for model in models:
+        pred = model.predict(user_input).labels[0][0]
 
-    races = ['White', 'Asian-Pac-Islander', 'Amer-Indian-Eskimo', 'Other', 'Black']
-    genders = ['Female', 'Male']
+        races = ['White', 'Asian-Pac-Islander', 'Amer-Indian-Eskimo', 'Other', 'Black']
+        genders = ['Female', 'Male']
 
-    if int(user_input.features[0][0]) == 1:
-        race_print = "white"
-    else:
-        race_print = "non-white"
-    if int(user_input.features[0][1]) == 0:
-        sex_print = "female"
-    else:
-        sex_print = "male"
+        if int(user_input.features[0][0]) == 1:
+            race_print = "white"
+        else:
+            race_print = "non-white"
+        if int(user_input.features[0][1]) == 0:
+            sex_print = "female"
+        else:
+            sex_print = "male"
 
-    # print(f"The model predicts that a {user_input.age} year old {race_print} {sex_print} with {user_input.edu} years of education has a {round(pred*100, 2)}% chance of having an income greater than 50k.")
-    if pred == 1.0:
-        print(f"The model predicts that a {user_input.age} year old {race_print} {sex_print} with {user_input.edu} years of education makes MORE than 50k.")
-    elif pred == 0.0:
-        print(f"The model predicts that a {user_input.age} year old {race_print} {sex_print} with {user_input.edu} years of education makes LESS than 50k.")
-    return pred
+        # print(f"The model predicts that a {user_input.age} year old {race_print} {sex_print} with {user_input.edu} years of education has a {round(pred*100, 2)}% chance of having an income greater than 50k.")
+        if pred == 1.0:
+            print(f"The model predicts that a {user_input.age} year old {race_print} {sex_print} with {user_input.edu} years of education makes MORE than 50k.")
+        elif pred == 0.0:
+            print(f"The model predicts that a {user_input.age} year old {race_print} {sex_print} with {user_input.edu} years of education makes LESS than 50k.")
+        pred_list.append(pred)
+            
+    return pred_list
 
