@@ -66,10 +66,10 @@ def adversarial_debiasing_query(subject, model_list):
                 race_input = 1.0
             else:
                 race_input = 0.0
-            raw_sex_input = input("Indicate the person's gender: [m] or [f]: ").lower()
-            if raw_sex_input == 'f' or raw_sex_input == 'female':
+            raw_sex_input = input("Indicate the person's gender: [m] or [f]: ")
+            if raw_sex_input == 'f':
                 sex_input = 0.0
-            else:
+            elif raw_sex_input == 'm':
                 sex_input = 1.0
             workclass_input = input("Indicate the person's workclass [Private, Self-Employed, Government, Never worked]: ")
             all_inputs_valid = True
